@@ -30,8 +30,11 @@ public class PlayerController : MonoBehaviour
     private int health;
 
     [SerializeField] private bool isHead;
+    [SerializeField] private bool isHeadlessMove;
     [SerializeField] private bool isIdle;
     [SerializeField] private bool isMove;
+
+    private bool isHeadless;
 
     [SerializeField] private bool isHeadAnimationCompleted;
 
@@ -45,94 +48,110 @@ public class PlayerController : MonoBehaviour
         isIdle = true;
         isHeadAnimationCompleted = true;
     }
-    public Projectile pr;
-    bool ix;
+
+    private void ResetAllTrigger()
+    {
+        animator.ResetTrigger("Move");
+        animator.ResetTrigger("Idle");
+        animator.ResetTrigger("Head");
+        animator.ResetTrigger("HeadToBack");
+        animator.ResetTrigger("Prepare");
+    }
+
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            ix = !ix;
-            pr.enabled =ix;
-        }
-
         direction = (mainCamera.ScreenToWorldPoint(Input.mousePosition) - this.transform.position);
         direction.Normalize();
-
         renderer.flipX = direction.x < 0;
 
         if (Input.anyKey)
         {
             bool isMoveInputDetected = (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D));
 
-            if (isHeadAnimationCompleted && 
-                !isHead &&
-                (isMoveInputDetected && Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(0))
-                )
+            if (!isHeadAnimationCompleted && isMoveInputDetected && Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(0))
             {
-                isHeadAnimationCompleted = false;
-                SetupAnimationBool(false, false, true);
+                isHead = true;
+                ResetAllTrigger();
+                animator.SetTrigger("Head");
+
+            }
+            else if (isHeadless && (isMoveInputDetected && Input.GetMouseButtonDown(1) || Input.GetMouseButtonDown(1)))
+            {
+                ResetAllTrigger();
+                animator.SetTrigger("Prepare");
+                head.GetHeadToMe(GetHeadToMeCompleted);
+            }
+            else if (Input.GetMouseButtonUp(1))
+            {
+                ResetAllTrigger();
             }
             else
             {
-                SetupAnimationBool(isMove: true, isIdle: false, isHead: false);
                 if (Input.GetKey(KeyCode.W))
-                    dir += new Vector2(0, 1);
+                    SetDirection(new Vector2(0, 1));
 
                 if (Input.GetKey(KeyCode.A))
-                    dir -= new Vector2(1, 0);
+                    SetDirection(new Vector2(-1, 0));
 
                 if (Input.GetKey(KeyCode.S))
-                    dir -= new Vector2(0, 1);
+                    SetDirection(new Vector2(0, -1));
 
                 if (Input.GetKey(KeyCode.D))
-                    dir += new Vector2(1, 0);
+                    SetDirection(new Vector2(1, 0));
 
                 rigidbody.MovePosition(new Vector2(this.transform.position.x, this.transform.position.y) + (dir.normalized * speed));
                 dir = Vector2.zero;
             }
         }
-        else
+    }
+
+    private void GetHeadToMeCompleted()
+    {
+        isHeadless = false;
+        ResetAllTrigger();
+        animator.SetTrigger("HeadToBack");
+    }
+
+    private void LateUpdate()
+    {
+        if (!Input.anyKey)
         {
-            isMove = false;
-            if (!isMove && !isHead)
+            if (!isHead && isHeadAnimationCompleted)
             {
-                SetupAnimationBool(isMove: false, isIdle: true, isHead: false);
+                ResetAllTrigger();
+                animator.SetTrigger("Idle");
             }
         }
     }
 
-    private void SetupAnimationBool(bool isMove, bool isIdle, bool isHead)
+    private void SetDirection(Vector2 dir)
     {
-        if (isMove && !isHeadAnimationCompleted)
+        this.dir += dir;
+        bool xxx = animator.GetCurrentAnimatorClipInfo(0)[0].clip.name.Equals("chaHead");
+        bool yyy = animator.GetCurrentAnimatorClipInfo(0)[0].clip.name.Equals("chaPrepareToRewind");
+        if (!xxx && !yyy)
         {
-            return;
+            ResetAllTrigger();
+            animator.SetTrigger("Move");
         }
-
-        this.isMove = isMove;
-        this.isIdle = isIdle;
-        this.isHead = isHead;
-
-        animator.SetBool("Move", isMove);
-        animator.SetBool("Idle", isIdle);
-        animator.SetBool("Head", isHead);
     }
 
     private IEnumerator _HeadAttackKey()
     {
-        StopCoroutine(_HeadAttackKey());
+        isHeadless = true;
         isHeadAnimationCompleted = false;
-        StopCoroutine(_HeadAttackKey());
         head.Force(direction, force);
         yield return new WaitForEndOfFrame();
     }
 
     private IEnumerator _HeadFinishKey()
     {
-        StopCoroutine(_HeadFinishKey());
-        yield return new WaitForSeconds(.5f);
         isHead = false;
-        head.ResetSetup();
+        isHeadlessMove = true;
         isHeadAnimationCompleted = true;
+        ResetAllTrigger();
+        animator.SetTrigger("Idle");
+        yield return new WaitForSeconds(.5f);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
