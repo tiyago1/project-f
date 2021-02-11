@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-
-public class PrefabFactory<T> : IFactory<T> where T : MonoBehaviour
+public class PrefabFactory<T> : IFactory<T> where T : IResettable
 {
     GameObject root;
     GameObject prefab;

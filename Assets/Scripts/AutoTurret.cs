@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class AutoTurret : MonoBehaviour
 {
@@ -10,6 +11,8 @@ public class AutoTurret : MonoBehaviour
     [SerializeField] private float fireRate;
     [SerializeField] private float force;
     [SerializeField] private Transform target;
+
+    private SpriteRenderer renderer;
 
     public Pool<Projectile> projectilePool;
     public Pool<MultiProjectile> multiProjectilePool;
@@ -21,6 +24,8 @@ public class AutoTurret : MonoBehaviour
 
     private void Awake()
     {
+        renderer = this.GetComponent<SpriteRenderer>();
+
         multiProjectilePool = new Pool<MultiProjectile>(new PrefabFactory<MultiProjectile>(multiProjectilePrefab, "BossMultiProjectilePool"), 2);
         projectilePool = new Pool<Projectile>(new PrefabFactory<Projectile>(projectilePrefab,"BossProjectilePool"), 8);
     }
@@ -64,5 +69,12 @@ public class AutoTurret : MonoBehaviour
     private void Projectile_OnBlowUp(Projectile projectile)
     {
         projectilePool.Release(projectile);
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        Debug.Log(collision.gameObject.name);
+        this.transform.DOPunchScale(new Vector3(2.1f, 2.1f, 2.1f), .2f);
+        renderer.DOColor(new Color(.5f, .5f, .5f), .1f).OnComplete(() => renderer.DOColor(new Color(1, 1, 1), .1f));
     }
 }

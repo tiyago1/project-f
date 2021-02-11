@@ -10,7 +10,6 @@ public class Projectile : MonoBehaviour, IResettable
     [SerializeField] private ProjectileModel model;
 
     private Rigidbody2D rigidbody;
-
     public event Action<Projectile> OnBlowUp;
 
     public void Init(ProjectileModel model)
