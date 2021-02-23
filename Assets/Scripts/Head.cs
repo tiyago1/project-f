@@ -14,6 +14,7 @@ public class Head : MonoBehaviour
     [SerializeField] private Transform holder;
 
     private bool isLineRendererActive;
+    private Action onCompleted;
 
     public bool AlmostEqual(Vector3 v1, Vector3 v2, float precision)
     {
@@ -63,16 +64,19 @@ public class Head : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        Debug.Log(collision.gameObject.name);
+        
+        Grenade grenade = collision.gameObject.GetComponent<Grenade>();
+        if (grenade != null)
+            grenade.OnDamageTaken();
+
         rigidbody.angularDrag = 3;
         rigidbody.drag = 3;
     }
-    Action onCompleted;
+
     public void GetHeadToMe(Action onCompleted)
     {
         this.onCompleted = onCompleted;
         holder.transform.position = this.transform.position;
         isLineRendererActive = true;
-     
     }
 }

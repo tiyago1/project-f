@@ -88,7 +88,7 @@ GameObject:
   - component: {fileID: 5733794382363227481}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -234,10 +234,10 @@ MonoBehaviour:
   direction: {x: 1, y: 0}
   force: 500
   isHead: 0
+  isHeadlessMove: 0
   isIdle: 0
   isMove: 0
   isHeadAnimationCompleted: 0
-  pr: {fileID: 0}
 --- !u!1 &5733794382853413052
 GameObject:
   m_ObjectHideFlags: 0

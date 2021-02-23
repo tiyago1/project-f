@@ -14,6 +14,8 @@ public enum DirectionType
 public class PlayerController : MonoBehaviour
 {
     private const float MOVE_STEP_VALUE = 0.2f;
+    private const float DEFAULT_MOVE_SPEED = 0.1f;
+    private const float MOVE_EXHOUSTED_SPEED_RATIO = 0.2f;
 
     [SerializeField] private Camera mainCamera;
     [SerializeField] private float speed;
@@ -163,4 +165,17 @@ public class PlayerController : MonoBehaviour
             renderer.DOBlendableColor(new Color(.5f, .5f, .5f), .2f).OnComplete(() => renderer.DOBlendableColor(Color.white, .1f));
         }
     }
+
+    public void OnGrenadeOverEffectEnter()
+    {
+        Debug.Log("OnGrenadeOverEffectEnter");
+        speed = DEFAULT_MOVE_SPEED - (DEFAULT_MOVE_SPEED * MOVE_EXHOUSTED_SPEED_RATIO);
+    }
+
+    public void OnGrenadeOverEffectExit()
+    {
+        Debug.Log("OnGrenadeOverEffectExit");
+        speed = DEFAULT_MOVE_SPEED;
+    }
+
 }

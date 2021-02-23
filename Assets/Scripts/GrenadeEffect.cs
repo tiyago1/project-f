@@ -3,12 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GrenadeEffect : MonoBehaviour,IResettable
+public class GrenadeEffect : MonoBehaviour, IResettable
 {
     private Action callBack;
-
     private Animator animator;
     public float EffectDuration => animator.GetCurrentAnimatorClipInfo(0).Length;
+
+    private bool isDamageTaken;
 
     private void Awake()
     {
@@ -38,4 +39,15 @@ public class GrenadeEffect : MonoBehaviour,IResettable
     {
         this.gameObject.SetActive(false);
     }
+
+    private void OnTriggerStay2D(Collider2D collision)
+    {
+        PlayerController player = collision.gameObject.GetComponent<PlayerController>();
+        if (!isDamageTaken && player != null)
+        {
+            Debug.LogError("BOOOMMMMM!!!!!");
+            isDamageTaken = true;
+        }
+    }
+
 }

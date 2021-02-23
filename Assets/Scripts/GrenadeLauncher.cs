@@ -8,9 +8,12 @@ public class GrenadeLauncher : MonoBehaviour
     [SerializeField] private GameObject grenadeEffectPrefab;
     [SerializeField] private float fireRate;
     [SerializeField] private Transform target;
+    [SerializeField] private AreaPoints areaPoints;
+    [SerializeField] private int grenadeMaxCount;
 
     public Pool<Grenade> grenadePool;
     public Pool<GrenadeEffect> grenadeEffectPool;
+    private int firedGrenadeCount;
 
     private void Awake()
     {
@@ -20,31 +23,24 @@ public class GrenadeLauncher : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.E))
+        if (Input.GetKeyDown(KeyCode.BackQuote))
         {
             StartCoroutine(Launch());
-            //Test();
         }
     }
 
     private IEnumerator Launch()
     {
-        while (true)
+        while (firedGrenadeCount <= grenadeMaxCount)
         {
-            Test();
+            firedGrenadeCount++;
+            GrenadeEffect effect = grenadeEffectPool.Allocate();
+            effect.Initialize(() => grenadeEffectPool.Release(effect));
+            Grenade granede = grenadePool.Allocate();
+            granede.transform.position = this.transform.position;
+            granede.gameObject.SetActive(true);
+            granede.Launch(effect, areaPoints.GetRandomPoint(target.position), target, () => grenadePool.Release(granede));
             yield return new WaitForSeconds(fireRate);
         }
     }
-
-    private void Test()
-    {
-        Vector2 direction = (target.transform.position - this.transform.position).normalized;
-        GrenadeEffect effect = grenadeEffectPool.Allocate();
-        effect.Initialize(() => grenadeEffectPool.Release(effect));
-        Grenade granede = grenadePool.Allocate();
-        granede.transform.position = this.transform.position;
-        granede.gameObject.SetActive(true);
-        granede.Launch(effect, target.transform.position, () => grenadePool.Release(granede));
-    }
-
 }
